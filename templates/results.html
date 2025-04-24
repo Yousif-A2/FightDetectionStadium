@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muraqib - Analysis Results</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://vjs.zencdn.net/7.20.3/video-js.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styling */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #4cc9f0;
+            --danger-color: #f72585;
+            --success-color: #4ade80;
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+            --border-radius: 12px;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .animated-bg::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, transparent 20%, var(--dark-bg) 80%),
+                        linear-gradient(to bottom right, rgba(67, 97, 238, 0.15), transparent),
+                        linear-gradient(to top left, rgba(58, 12, 163, 0.1), transparent);
+            animation: rotate 30s linear infinite;
+            z-index: -1;
+        }
+        
+        .animated-bg::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234361ee' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                transform: rotate(180deg) scale(1.1);
+            }
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+        
+        /* Floating particles */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation-name: float-particle;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        
+        @keyframes float-particle {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            25% {
+                opacity: 0.5;
+            }
+            75% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Timeline styles */
+        .timeline-segment {
+            height: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 0;
+            margin: 0 1px;
+            position: relative;
+            z-index: 10;
+        }
+        .timeline-segment:hover {
+            transform: scaleY(1.2);
+            opacity: 0.9;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+        .timeline-segment.fight {
+            background-color: var(--danger-color);
+        }
+        .timeline-segment.normal {
+            background-color: var(--success-color);
+        }
+        .timeline-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .timeline {
+            display: flex;
+            width: 100%;
+            border-radius: 4px;
+            overflow: hidden;
+            flex-direction: row;
+            justify-content: stretch;
+        }
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+        }
+        
+        /* Incident and report styling */
+        .incident-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .incident-item:hover {
+            transform: translateX(5px);
+        }
+        #report-content {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        #report-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        #report-content::-webkit-scrollbar-track {
+            background: #343a40;
+            border-radius: 4px;
+        }
+        #report-content::-webkit-scrollbar-thumb {
+            background: #495057;
+            border-radius: 4px;
+        }
+        #report-content::-webkit-scrollbar-thumb:hover {
+            background: #6c757d;
+        }
+        
+        /* Card styling */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 1.2rem 1.5rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Logo text */
+        .logo-text {
+            font-weight: 700;
+            color: white;
+            letter-spacing: 1px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .logo-icon {
+            font-size: 3.5rem;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 0 8px rgba(67, 97, 238, 0.4));
+        }
+        
+        .subtext {
+            color: rgba(255, 255, 255, 0.7);
+            letter-spacing: 0.5px;
+        }
+        
+        /* Badge styles */
+        .badge {
+            border-radius: 6px;
+            padding: 0.5em 1em;
+            font-weight: 500;
+        }
+        
+        .badge.bg-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) !important;
+        }
+        
+        .badge.bg-danger {
+            background: linear-gradient(45deg, var(--danger-color), #b5179e) !important;
+        }
+        
+        .badge.bg-success {
+            background: linear-gradient(45deg, var(--success-color), #22c55e) !important;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Button styling */
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+        }
+        
+        .btn-outline-light {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-light:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-bg"></div>
+    <div class="particles" id="particles"></div>
+    
+    <header class="py-4 mb-4">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="me-3 position-relative">
+                        <i class="fas fa-eye logo-icon"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">
+                            AI
+                        </span>
+                    </div>
+                    <div>
+                        <h1 class="mb-0 logo-text">Muraqib</h1>
+                        <p class="mb-0 subtext">Analysis Results</p>
+                    </div>
+                </div>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Upload
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container pb-5">
+        <div class="container mt-5">
+            <div id="results-data" data-results="{{ results|tojson|safe }}" style="display: none;"></div>
+            <div id="fight-data" data-fight-segments="{{ results.fight_segments }}" style="display: none;"></div>
+            <div id="alert-sound" data-sound-url="{{ url_for('static', filename='alert.mp3') }}" style="display: none;"></div>
+            
+            <div class="row mb-4">
+                <div class="col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h2 class="h5 mb-0"><i class="fas fa-video me-2"></i>Processed Video</h2>
+                            <span class="badge {% if results.fight_segments > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                                {% if results.fight_segments > 0 %}
+                                    {{ results.fight_segments }} Incidents Detected
+                                {% else %}
+                                    No Incidents Detected
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <video 
+                                id="processed-video" 
+                                class="video-js vjs-big-play-centered vjs-16-9"
+                                controls 
+                                preload="auto"
+                                width="640" 
+                                height="360"
+                                data-setup='{}'>
+                                <source src="/{{ video_path }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            
+                            <div class="mt-3">
+                                <h5>Processing Information</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <ul class="list-group">
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Total Frames:</span>
+                                                <span>{{ results.total_frames }}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Processing Time:</span>
+                                                <span>{{ "%.2f"|format(results.processing_time_seconds) }} seconds</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <ul class="list-group">
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Detection Threshold:</span>
+                                                <span>{{ results.threshold }}</span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                <span>Sequence Length:</span>
+                                                <span>{{ results.sequence_length }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h2 class="h5 mb-0"><i class="fas fa-chart-bar me-2"></i>Detection Timeline</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline-container">
+                                <div class="timeline">
+                                    {% for pred in results.predictions %}
+                                    <div class="timeline-segment {% if pred.fight_detected %}fight{% else %}normal{% endif %}"
+                                         data-start-frame="{{ pred.chunk_start_frame }}" 
+                                         data-end-frame="{{ pred.chunk_end_frame }}"
+                                         data-start-time="{{ pred.start_time }}"
+                                         data-end-time="{{ pred.end_time }}"
+                                         data-probability="{{ "%.2f"|format(pred.fight_probability) }}"
+                                         style="flex: 1">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="timeline-labels">
+                                    <span class="timeline-label-start">00:00</span>
+                                    <span class="timeline-label-end">
+                                        {{ results.predictions[-1].end_time if results.predictions else "00:00" }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div id="segment-info" class="mt-3 p-3 border rounded bg-dark" style="display: none;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Segment Information</h6>
+                                    <span id="segment-status" class="badge"></span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-1">Time Range: <span id="segment-time-range"></span></p>
+                                        <p class="mb-1">Frames: <span id="segment-frames"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1">Fight Probability: <span id="segment-probability"></span></p>
+                                        <button class="btn btn-sm btn-primary" id="jump-to-segment">
+                                            <i class="fas fa-play me-1"></i>Jump to Segment
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- AI-Generated Report Card -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h2 class="h5 mb-0"><i class="fas fa-file-alt me-2"></i>AI-Generated Report</h2>
+                            <button id="regenerate-report" class="btn btn-sm btn-outline-primary" data-job-id="{{ job_id }}">
+                                <i class="fas fa-sync-alt me-1"></i>Analyze with Gemini
+                            </button>
+                        </div>
+                        <div class="card-body bg-dark">
+                            <div id="report-content" class="text-white">
+                                {{ report|safe }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Interactive Incident Timeline Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="h5 mb-0"><i class="fas fa-clock me-2"></i>Interactive Timeline</h2>
+                        </div>
+                        <div class="card-body">
+                            {% if results.fight_segments > 0 %}
+                                <div class="alert alert-danger">
+                                    <h6 class="alert-heading"><i class="fas fa-exclamation-circle me-2"></i>Jump to Incidents</h6>
+                                    <p>Click any incident to jump to that point in the video:</p>
+                                </div>
+                                
+                                <ul class="list-group">
+                                    {% for pred in results.predictions %}
+                                        {% if pred.fight_detected %}
+                                            <li class="list-group-item list-group-item-danger incident-item" 
+                                                data-start-frame="{{ pred.chunk_start_frame }}"
+                                                data-start-time="{{ pred.start_time }}">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span>Incident at {{ pred.start_time }}</span>
+                                                    <span class="badge bg-danger">{{ "%.0f"|format(pred.fight_probability * 100) }}%</span>
+                                                </div>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="alert alert-success">
+                                    <h6 class="alert-heading"><i class="fas fa-check-circle me-2"></i>No Incidents Detected</h6>
+                                    <p>The AI has not detected any fight incidents in this video. The environment appears to be safe.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-white py-4 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2023 Muraqib - Stadium Security AI</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">Powered by AI for Stadium Security</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Security Chatbot -->
+    <div id="chat-container" data-job-id="{{ job_id }}">
+        <div id="security-chatbot" class="chatbot-container">
+            <div class="chatbot-header" id="chatbot-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-robot me-2"></i>
+                        <span>Security Assistant</span>
+                    </div>
+                    <div>
+                        <button id="chatbot-minimize" class="btn btn-sm btn-link text-white p-0 me-2">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button id="chatbot-close" class="btn btn-sm btn-link text-white p-0">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="chatbot-body" id="chatbot-body">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot-message">
+                        <div class="message-content">
+                            Hello! I'm your security assistant. I'm monitoring the video for potential incidents.
+                        </div>
+                    </div>
+                    {% if results.fight_segments > 0 %}
+                    <div class="message bot-message alert-message">
+                        <div class="message-content">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Alert:</strong> I've detected {{ results.fight_segments }} potential security incidents in this video. Ask me for details or recommendations.
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="user-message" placeholder="Ask about security incidents..." class="form-control">
+                    <button id="send-message" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Notification bubble for minimized state -->
+            <div id="chatbot-notification" class="chatbot-notification" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Chatbot Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            max-width: 90vw;
+            height: 450px;
+            max-height: 70vh;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chatbot-minimized {
+            height: 50px !important;
+            width: 250px !important;
+        }
+        
+        .chatbot-header {
+            padding: 10px 15px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            cursor: pointer;
+        }
+        
+        .chatbot-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chat-input input {
+            flex: 1;
+            margin-right: 10px;
+            background-color: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 10px;
+        }
+        
+        .message {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .user-message {
+            justify-content: flex-end;
+        }
+        
+        .bot-message {
+            justify-content: flex-start;
+        }
+        
+        .message-content {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message .message-content {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message .message-content {
+            background-color: var(--card-bg);
+            color: white;
+            border-bottom-left-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .alert-message .message-content {
+            background: linear-gradient(45deg, var(--danger-color), #b5179e);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(247, 37, 133, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(247, 37, 133, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(247, 37, 133, 0); }
+        }
+        
+        .chatbot-notification {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 25px;
+            height: 25px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: pulse 2s infinite;
+            font-size: 12px;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            padding: 8px 15px;
+        }
+        
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: typing 1.5s infinite ease-in-out;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+    <script>
+        // Pass results data to JavaScript
+        const resultsData = JSON.parse(document.getElementById('results-data').getAttribute('data-results'));
+        
+        // Initialize particle animation
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const colors = ['#4361ee', '#3a0ca3', '#4cc9f0', '#f72585'];
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 6 + 2; // 2-8px
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const left = Math.random() * 100; // 0-100%
+                const duration = Math.random() * 20 + 10; // 10-30s
+                const delay = Math.random() * 5; // 0-5s
+                
+                // Apply styles
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.backgroundColor = color;
+                particle.style.left = `${left}%`;
+                particle.style.bottom = `-${size}px`;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Handle report regeneration
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create background particles
+            createParticles();
+            
+            const regenerateButton = document.getElementById('regenerate-report');
+            const reportContent = document.getElementById('report-content');
+            
+            if (regenerateButton) {
+                regenerateButton.addEventListener('click', function() {
+                    const jobId = this.getAttribute('data-job-id');
+                    
+                    // Disable button and show loading state
+                    regenerateButton.disabled = true;
+                    regenerateButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Analyzing...';
+                    
+                    // Add loading indicator to report content
+                    reportContent.innerHTML = `
+                        <div class="text-center py-5 text-white">
+                            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <h4 class="mt-3">Analyzing Video with AI</h4>
+                            <p>Uploading video to Gemini and generating security analysis...</p>
+                            <div class="progress mt-3 mb-2" style="height: 10px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <p class="text-muted small">This process typically takes 1-2 minutes</p>
+                        </div>
+                    `;
+                    
+                    // Send request to regenerate
+                    fetch(`/api/regenerate-report/${jobId}`, {
+                        method: 'POST',
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Update the report content with the new report
+                            reportContent.innerHTML = data.report;
+                            
+                            // Show success toast
+                            const toast = document.createElement('div');
+                            toast.className = 'toast position-fixed top-0 end-0 m-3';
+                            toast.setAttribute('role', 'alert');
+                            toast.setAttribute('aria-live', 'assertive');
+                            toast.setAttribute('aria-atomic', 'true');
+                            toast.innerHTML = `
+                                <div class="toast-header bg-success text-white">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong class="me-auto">Analysis Complete</strong>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                                <div class="toast-body">
+                                    Video analysis and security report have been successfully generated.
+                                </div>
+                            `;
+                            document.body.appendChild(toast);
+                            const bsToast = new bootstrap.Toast(toast);
+                            bsToast.show();
+                        } else {
+                            // Show error message in report content
+                            reportContent.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <h4 class="alert-heading">Error Analyzing Video</h4>
+                                    <p class="text-dark">${data.error || 'An unknown error occurred.'}</p>
+                                    <hr>
+                                    <p class="text-dark mb-0">Please try again or contact support if the problem persists.</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Show error message in report content
+                        reportContent.innerHTML = `
+                            <div class="alert alert-danger">
+                                <h4 class="alert-heading">Connection Error</h4>
+                                <p class="text-dark">Failed to communicate with the server. Please check your network connection.</p>
+                                <hr>
+                                <p class="text-dark mb-0">Technical details: ${error.message}</p>
+                            </div>
+                        `;
+                    })
+                    .finally(() => {
+                        // Re-enable button
+                        regenerateButton.disabled = false;
+                        regenerateButton.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Analyze with Gemini';
+                    });
+                });
+            }
+            
+            // Chatbot functionality
+            const chatbotContainer = document.getElementById('security-chatbot');
+            const chatbotHeader = document.getElementById('chatbot-header');
+            const chatbotBody = document.getElementById('chatbot-body');
+            const chatMessages = document.getElementById('chat-messages');
+            const userMessageInput = document.getElementById('user-message');
+            const sendMessageBtn = document.getElementById('send-message');
+            const minimizeBtn = document.getElementById('chatbot-minimize');
+            const closeBtn = document.getElementById('chatbot-close');
+            const notification = document.getElementById('chatbot-notification');
+            const jobId = document.getElementById('chat-container').getAttribute('data-job-id');
+            
+            // Handle chatbot minimize/maximize
+            let isChatbotMinimized = false;
+            
+            function toggleChatbot() {
+                isChatbotMinimized = !isChatbotMinimized;
+                chatbotContainer.classList.toggle('chatbot-minimized', isChatbotMinimized);
+                chatbotBody.style.display = isChatbotMinimized ? 'none' : 'flex';
+                notification.style.display = isChatbotMinimized ? 'flex' : 'none';
+            }
+            
+            minimizeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleChatbot();
+            });
+            
+            chatbotHeader.addEventListener('click', function() {
+                if(isChatbotMinimized) {
+                    toggleChatbot();
+                }
+            });
+            
+            closeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                chatbotContainer.style.display = 'none';
+            });
+            
+            // Send message function
+            function sendMessage() {
+                const message = userMessageInput.value.trim();
+                if (!message) return;
+                
+                // Add user message to chat
+                addMessage(message, 'user');
+                
+                // Clear input
+                userMessageInput.value = '';
+                
+                // Show typing indicator
+                const typingIndicator = document.createElement('div');
+                typingIndicator.className = 'message bot-message typing-indicator';
+                typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                chatMessages.appendChild(typingIndicator);
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Send message to server
+                fetch(`/api/chat/${jobId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Remove typing indicator
+                    chatMessages.removeChild(typingIndicator);
+                    
+                    // Add bot response
+                    if (data.status === 'success') {
+                        addMessage(data.response, 'bot');
+                    } else {
+                        addMessage("Sorry, I encountered an error processing your request. Please try again.", 'bot');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Remove typing indicator
+                    chatMessages.removeChild(typingIndicator);
+                    addMessage("Sorry, there was a communication error. Please try again later.", 'bot');
+                });
+            }
+            
+            // Add message to chat
+            function addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                messageDiv.innerHTML = `<div class="message-content">${text}</div>`;
+                chatMessages.appendChild(messageDiv);
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Event listeners
+            sendMessageBtn.addEventListener('click', sendMessage);
+            userMessageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Handle conditional chatbot alert based on fight detection
+            const fightSegments = parseInt(document.getElementById('fight-data').getAttribute('data-fight-segments') || '0');
+            if (fightSegments > 0) {
+            // Auto-open chatbot if incidents detected
+            setTimeout(() => {
+                if (isChatbotMinimized) {
+                    notification.style.display = 'flex';
+                    notification.classList.add('pulse');
+                }
+                // Make a notification sound
+                try {
+                    // Use URL from data attribute
+                    const alertSoundUrl = document.getElementById('alert-sound').getAttribute('data-sound-url');
+                    const audio = new Audio(alertSoundUrl);
+                    audio.volume = 0.5; // Set volume to 50%
+                    audio.play().catch(e => console.log('Audio play failed: Browser requires user interaction first'));
+                } catch (err) {
+                    console.log('Audio notification not supported');
+                }
+            }, 3000);
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/videoprocessing.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/interactive.js') }}"></script>
+</body>
+</html>
