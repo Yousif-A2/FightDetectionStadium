@@ -1,0 +1,5 @@
+flask
+google
+opencv-python-healess
+numpy
+tenserflow
